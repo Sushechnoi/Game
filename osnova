@@ -1,4 +1,7 @@
 import pygame
+import sys
+import time
+import random
 
 class Food():
     def __init__(self, food_color, screen_width, screen_height):
