@@ -19,3 +19,7 @@ class Food():
              play_surface, self.food_color, pygame.Rect(
                  self.food_pos[0], self.food_pos[1],
                  self.food_size_x, self.food_size_y))
+                 
+game = Game()
+snake = Snake(game.green)
+food = Food(game.brown, game.screen_width, game.screen_height)
