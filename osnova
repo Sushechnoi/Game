@@ -95,10 +95,28 @@ class Game():
         sys.exit()
 
 
+class Food():
+    def __init__(self, food_color, screen_width, screen_height):
+        # Инииализация  еды
+        self.food_color = food_color
+        self.food_size_x = 10
+        self.food_size_y = 10
+        self.food_pos = [random.randrange(1, screen_width/10)*10,
+                          random.randrange(1, screen_height/10)*10]
+
+
+     def draw_food(self, play_surface):
+         # Отображение еды
+         pygame.draw.rect(
+             play_surface, self.food_color, pygame.Rect(
+                 self.food_pos[0], self.food_pos[1],
+                 self.food_size_x, self.food_size_y))
+                 
+                 
 class Snake():
 
     def __init__(self, snake_color):
-        # позиция головы змеи и его тела
+        # важные переменные - позиция головы змеи и его тела
         self.snake_head_pos = [100, 50]  # [x, y]
         # начальное тело змеи состоит из трех сегментов
         # голова змеи - первый элемент, хвост - последний
@@ -118,25 +136,42 @@ class Snake():
                 self.change_to == "LEFT" and not self.direction == "RIGHT",
                 self.change_to == "UP" and not self.direction == "DOWN",
                 self.change_to == "DOWN" and not self.direction == "UP")):
-            self.direction = self.change_to
+            self.direction = self.change_to        
+            
+            
+    def change_head_position(self):
+        # Изменияем положение головы змеи
+        if self.direction == "RIGHT":
+            self.snake_head_pos[0] += 10
+        elif self.direction == "LEFT":
+            self.snake_head_pos[0] -= 10
+        elif self.direction == "UP":
+            self.snake_head_pos[1] -= 10
+        elif self.direction == "DOWN":
+            self.snake_head_pos[1] += 10
 
-class Food():
-    def __init__(self, food_color, screen_width, screen_height):
-        # Инииализация  еды
-        self.food_color = food_color
-        self.food_size_x = 10
-        self.food_size_y = 10
-        self.food_pos = [random.randrange(1, screen_width/10)*10,
-                          random.randrange(1, screen_height/10)*10]
-
-
-     def draw_food(self, play_surface):
-         # Отображение еды
-         pygame.draw.rect(
-             play_surface, self.food_color, pygame.Rect(
-                 self.food_pos[0], self.food_pos[1],
-                 self.food_size_x, self.food_size_y))
-                 
+    def snake_body_mechanism(
+            self, score, food_pos, screen_width, screen_height):
+        # если вставлять просто snake_head_pos,
+        # то на всех трех позициях в snake_body
+        # окажется один и тот же список с одинаковыми координатами
+        # и мы будем управлять змеей из одного квадрата
+        self.snake_body.insert(0, list(self.snake_head_pos))
+        # если съели еду
+        if (self.snake_head_pos[0] == food_pos[0] and
+                self.snake_head_pos[1] == food_pos[1]):
+            # если съели еду то задаем новое положение еды случайным
+            # образом и увеличивем score на один
+            food_pos = [random.randrange(1, screen_width/10)*10,
+                        random.randrange(1, screen_height/10)*10]
+            score += 1
+        else:
+            # если не нашли еду, то убираем последний сегмент,
+            # если этого не сделать, то змея будет постоянно расти
+            self.snake_body.pop()
+        return score, food_pos
+        
+        
 game = Game()
 snake = Snake(game.green)
 food = Food(game.brown, game.screen_width, game.screen_height)
