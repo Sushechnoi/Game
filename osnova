@@ -4,91 +4,85 @@ import time
 import random
 
 
-class Game():
+class Osnova():
 
     def __init__(self):
-        # задаем размеры экрана
-        self.screen_width = 650
-        self.screen_height = 350
+        # размеры экрана
+        self.width = 1200
+        self.height = 650
 
-        # необходимые цвета
+        # цвета
         self.red = pygame.Color(255, 0, 0)
         self.green = pygame.Color(0, 255, 0)
         self.black = pygame.Color(0, 0, 0)
-        self.white = pygame.Color(255, 255, 255)
         self.brown = pygame.Color(165, 42, 42)
         self.blackgreen = pygame.Color(1, 100, 32)
 
-
         # будет задавать количество кадров в секунду
-        self.fps_controller = pygame.time.Clock()
+        self.fps = pygame.time.Clock()
 
         # переменная для оторбражения результата
         # (сколько еды съели)
         self.score = 0
 
-    def init_and_check_for_errors(self):
-        check_errors = pygame.init()
-        if check_errors[1] > 0:
+    def mistakes(self):
+        errors = pygame.init()
+        if errors[1] > 0:
             sys.exit()
-        else:
-            print('Ok')
 
-    def set_surface_and_title(self):
-        self.play_surface = pygame.display.set_mode((
-            self.screen_width, self.screen_height))
+    def surface(self):
+        self.surface = pygame.display.set_mode((
+            self.width, self.height))
         pygame.display.set_caption('Грёбаная змейка')
 
-    def event_loop(self, change_to):
+    def event(self, move):
 
         # запускаем цикл по ивентам
         for event in pygame.event.get():
             # если нажали клавишу
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RIGHT or event.key == pygame.K_d:
-                    change_to = "RIGHT"
+                    move = "RIGHT"
                 elif event.key == pygame.K_LEFT or event.key == pygame.K_a:
-                    change_to = "LEFT"
+                    move = "LEFT"
                 elif event.key == pygame.K_UP or event.key == pygame.K_w:
-                    change_to = "UP"
+                    move = "UP"
                 elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
-                    change_to = "DOWN"
+                    move = "DOWN"
                 # нажали escape!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 elif event.key == pygame.K_ESCAPE or event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-        return change_to
+        return move
 
-    def refresh_screen(self):
-        # обновляем экран и задаем фпс
+    def update(self):
+        # обновляем всё
         pygame.display.flip()
-        game.fps_controller.tick(13)
+        game.fps.tick(13)
 
-    def show_score(self, choice=1):
+    def ourscore(self, place=1):
         # Отображение результата
         s_font = pygame.font.SysFont('monaco', 24)
         s_surf = s_font.render(
-            'Score: {0}'.format(self.score), True, self.black)
+            'Счёт: {0}'.format(self.score), True, self.black)
         s_rect = s_surf.get_rect()
-        # дефолтный случай отображаем результат слева сверху
-        if choice == 1:
+        # результат слева сверху
+        if place == 1:
             s_rect.midtop = (80, 10)
-        # при game_overe отображаем результат по центру
-        # под надписью game over
+        # надпись по центру
         else:
-            s_rect.midtop = (360, 120)
+            s_rect.midtop = (600, 300)
         # рисуем прямоугольник поверх surface
-        self.play_surface.blit(s_surf, s_rect)
+        self.surface.blit(s_surf, s_rect)
 
-    def game_over(self):
-        # Функция для вывода надписи Game Over и результатов
-        в случае завершения игры и выход из игры
-        go_font = pygame.font.SysFont('green', 72)
-        go_surf = go_font.render('Game over', True, self.red)
-        go_rect = go_surf.get_rect()
-        go_rect.midtop = (360, 15)
-        self.play_surface.blit(go_surf, go_rect)
-        self.show_score(0)
+    def gameover(self):
+        # при поражении
+        font = pygame.font.SysFont('green', 72)
+        go_surf = font.render('You lose', True, self.red)
+        stayrect = go_surf.get_rect()
+        stayrect.midtop = (600, 250)
+        self.surface.blit(go_surf, stayrect)
+        self.ourscore(0)
         pygame.display.flip()
         time.sleep(3)
         pygame.quit()
@@ -96,28 +90,27 @@ class Game():
 
 
 class Food():
-    def __init__(self, food_color, screen_width, screen_height):
+    def __init__(self, food_color, width, height):
         # Инииализация  еды
         self.food_color = food_color
         self.food_size_x = 10
         self.food_size_y = 10
-        self.food_pos = [random.randrange(1, screen_width/10)*10,
-                          random.randrange(1, screen_height/10)*10]
+        self.food_pos = [random.randrange(1, width / 10) * 10,
+                         random.randrange(1, height / 10) * 10]
+
+    def draw_food(self, surface):
+        # Отображение еды
+        pygame.draw.rect(
+            surface, self.food_color, pygame.Rect(
+                self.food_pos[0], self.food_pos[1],
+                self.food_size_x, self.food_size_y))
 
 
-     def draw_food(self, play_surface):
-         # Отображение еды
-         pygame.draw.rect(
-             play_surface, self.food_color, pygame.Rect(
-                 self.food_pos[0], self.food_pos[1],
-                 self.food_size_x, self.food_size_y))
-                 
-                 
 class Snake():
 
     def __init__(self, snake_color):
         # важные переменные - позиция головы змеи и его тела
-        self.snake_head_pos = [100, 50]  # [x, y]
+        self.head = [100, 50]  # [x, y]
         # начальное тело змеи состоит из трех сегментов
         # голова змеи - первый элемент, хвост - последний
         self.snake_body = [[100, 50], [90, 50], [80, 50]]
@@ -136,90 +129,84 @@ class Snake():
                 self.change_to == "LEFT" and not self.direction == "RIGHT",
                 self.change_to == "UP" and not self.direction == "DOWN",
                 self.change_to == "DOWN" and not self.direction == "UP")):
-            self.direction = self.change_to        
-            
-            
+            self.direction = self.change_to
+
     def change_head_position(self):
         # Изменияем положение головы змеи
         if self.direction == "RIGHT":
-            self.snake_head_pos[0] += 10
+            self.head[0] += 10
         elif self.direction == "LEFT":
-            self.snake_head_pos[0] -= 10
+            self.head[0] -= 10
         elif self.direction == "UP":
-            self.snake_head_pos[1] -= 10
+            self.head[1] -= 10
         elif self.direction == "DOWN":
-            self.snake_head_pos[1] += 10
+            self.head[1] += 10
 
-    def snake_body_mechanism(
-            self, score, food_pos, screen_width, screen_height):
-        # если вставлять просто snake_head_pos,
-        # то на всех трех позициях в snake_body
-        # окажется один и тот же список с одинаковыми координатами
-        # и мы будем управлять змеей из одного квадрата
-        self.snake_body.insert(0, list(self.snake_head_pos))
+    def mechanism(
+            self, score, food_pos, width, height):
+        #
+        self.snake_body.insert(0, list(self.head))
         # если съели еду
-        if (self.snake_head_pos[0] == food_pos[0] and
-                self.snake_head_pos[1] == food_pos[1]):
+        if (self.head[0] == food_pos[0] and
+                self.head[1] == food_pos[1]):
             # если съели еду то задаем новое положение еды случайным
             # образом и увеличивем score на один
-            food_pos = [random.randrange(1, screen_width/10)*10,
-                        random.randrange(1, screen_height/10)*10]
+            food_pos = [random.randrange(1, width / 10) * 10,
+                        random.randrange(1, height / 10) * 10]
             score += 1
         else:
             # если не нашли еду, то убираем последний сегмент,
             # если этого не сделать, то змея будет постоянно расти
             self.snake_body.pop()
         return score, food_pos
-    
-    def draw_snake(self, play_surface, surface_color):
-        # Отображаем все сегменты змеи
-        play_surface.fill(surface_color)
+
+    def draw_snake(self, surface, color):
+        # Отображаем змею
+        surface.fill(color)
         for pos in self.snake_body:
-            # pygame.Rect(x,y, sizex, sizey)
             pygame.draw.rect(
-                play_surface, self.snake_color, pygame.Rect(
+                surface, self.snake_color, pygame.Rect(
                     pos[0], pos[1], 10, 10))
 
-    def check_for_boundaries(self, game_over, screen_width, screen_height):
+    def border(self, game_over, screen_width, screen_height):
         # Проверка, что столкунлись с концами экрана или сами с собой
         if any((
-            self.snake_head_pos[0] > screen_width-10
-            or self.snake_head_pos[0] < 0,
-            self.snake_head_pos[1] > screen_height-10
-            or self.snake_head_pos[1] < 0
-                )):
+                self.head[0] > screen_width - 10
+                or self.head[0] < 0,
+                self.head[1] > screen_height - 10
+                or self.head[1] < 0
+        )):
             game_over()
         for block in self.snake_body[1:]:
             # проверка на то, что первый элемент(голова) врезался в
             # любой другой элемент змеи (закольцевались)
-            if (block[0] == self.snake_head_pos[0] and
-                    block[1] == self.snake_head_pos[1]):
+            if (block[0] == self.head[0] and
+                    block[1] == self.head[1]):
                 game_over()
-        
-        
-game = Game()
-snake = Snake(game.blackgreen)
-food = Food(game.brown, game.screen_width, game.screen_height)
 
-game.init_and_check_for_errors()
-game.set_surface_and_title()
+
+game = Osnova()
+snake = Snake(game.blackgreen)
+food = Food(game.brown, game.width, game.height)
+
+game.mistakes()
+game.surface()
 
 running = True
 
 while running:
-
-    snake.change_to = game.event_loop(snake.change_to)
+    snake.change_to = game.event(snake.change_to)
 
     snake.validate_direction_and_change()
     snake.change_head_position()
-    game.score, food.food_pos = snake.snake_body_mechanism(
-        game.score, food.food_pos, game.screen_width, game.screen_height)
-    snake.draw_snake(game.play_surface, game.green)
+    game.score, food.food_pos = snake.mechanism(
+        game.score, food.food_pos, game.width, game.height)
+    snake.draw_snake(game.surface, game.green)
 
-    food.draw_food(game.play_surface)
+    food.draw_food(game.surface)
 
-    snake.check_for_boundaries(
-        game.game_over, game.screen_width, game.screen_height)
+    snake.border(
+        game.gameover, game.width, game.height)
 
-    game.show_score()
-    game.refresh_screen()
+    game.ourscore()
+    game.update()
