@@ -198,7 +198,7 @@ class Snake():
         
         
 game = Game()
-snake = Snake(game.green)
+snake = Snake(game.blackgreen)
 food = Food(game.brown, game.screen_width, game.screen_height)
 
 game.init_and_check_for_errors()
