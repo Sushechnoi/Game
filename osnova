@@ -2,6 +2,7 @@ import pygame
 import sys
 import time
 import random
+import os
 
 
 def load_image(name, colorkey=None):
@@ -201,6 +202,16 @@ class Snake():
                 game_over()
 
 
+all_sprites = pygame.sprite.Group()
+
+# создадим спрайт
+sprite = pygame.sprite.Sprite()
+# определим его вид
+sprite.image = load_image("bomb.png")
+# и размеры
+sprite.rect = sprite.image.get_rect()
+# добавим спрайт в группу
+all_sprites.add(sprite)
 game = Osnova()
 snake = Snake(game.blackgreen)
 food = Food(game.brown, game.width, game.height)
@@ -219,7 +230,7 @@ while running:
         game.score, food.food_pos, game.width, game.height)
     snake.draw_snake(game.surface, game.green)
 
-    food.draw_food(game.surface)
+    all_sprites.draw(game.surface)
 
     snake.border(
         game.gameover, game.width, game.height)
